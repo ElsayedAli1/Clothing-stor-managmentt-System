@@ -1,0 +1,29 @@
+﻿@model List<ElabdStor.ViewModels.PurchaseSummaryViewModel>
+
+<h2 class="text-primary mb-3">قائمة المشتريات</h2>
+
+<table class="table table-bordered table-striped text-center align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>اسم المورد</th>
+            <th>رقم الهاتف</th>
+            <th>إجمالي الفاتورة</th>
+            <th>تفاصيل الفاتورة</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.SupplierName</td>
+                <td>@p.SupplierPhone</td>
+                <td>@p.TotalAmount.ToString("N2") ج.م</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@p.PurchaseId" class="btn btn-sm btn-info">
+                        عرض التفاصيل
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

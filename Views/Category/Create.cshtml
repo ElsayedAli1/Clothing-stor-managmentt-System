@@ -1,0 +1,21 @@
+﻿@model ElabdStor.Models.Category
+@{
+    ViewData["Title"] = "إضافة تصنيف جديد";
+}
+
+<h2 class="text-success mb-3">إضافة تصنيف جديد</h2>
+
+<form asp-action="Create" method="post" class="bg-white p-4 rounded shadow-sm">
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">حفظ</button>
+    <a asp-action="Index" class="btn btn-secondary">عودة للقائمة</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,97 @@
+﻿@model IEnumerable<ElabdStor.Models.Category>
+
+@{
+    ViewData["Title"] = "التصنيفات";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-primary">قائمة التصنيفات</h2>
+    <div class="btn-group">
+        <a asp-action="Create" class="btn btn-success">+ إضافة تصنيف جديد</a>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-light">الرئيسية</a>
+    </div>
+</div>
+
+@if (TempData["success"] != null)
+{
+    <div class="alert alert-success">@TempData["success"]</div>
+}
+
+<table class="table table-bordered table-striped align-middle">
+    <thead class="table-primary">
+        <tr>
+            <th>م</th>
+            <th>اسم التصنيف</th>
+            <th style="width:150px;">العمليات</th>
+        </tr>
+    </thead>
+    <tbody id="categoryTableBody">
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="3" class="text-center text-muted">لا توجد تصنيفات مضافة بعد</td>
+            </tr>
+        }
+        else
+        {
+            int count = 1;
+            foreach (var item in Model)
+            {
+                <tr data-id="@item.Id">
+                    <td>@count</td>
+                    <td>@item.Name</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">تعديل</a>
+                        <button type="button" class="btn btn-danger btn-sm btn-delete" data-id="@item.Id">حذف</button>
+                    </td>
+                </tr>
+                count++;
+            }
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            $(".btn-delete").click(function () {
+                var id = $(this).data("id");
+                var row = $(this).closest("tr");
+
+                Swal.fire({
+                    title: "هل أنت متأكد؟",
+                    text: "لن يمكنك التراجع بعد الحذف!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "نعم، احذف",
+                    cancelButtonText: "إلغاء"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/Category/DeleteAjax/' + id,
+                            type: 'POST',
+                            success: function (response) {
+                                if (response.success) {
+                                    row.fadeOut(500, function () {
+                                        $(this).remove();
+                                    });
+                                    Swal.fire("تم", response.message, "success");
+                                } else {
+                                    Swal.fire("خطأ", response.message, "error");
+                                }
+                            },
+                            error: function () {
+                                Swal.fire("خطأ", "تعذر الاتصال بالسيرفر ❌", "error");
+                            }
+                        });
+                    }
+                });
+            });
+
+        });
+    </script>
+}

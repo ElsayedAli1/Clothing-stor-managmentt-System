@@ -1,0 +1,81 @@
+﻿@model IEnumerable<ElabdStor.ViewModels.CustomerSummaryViewModel>
+
+@{
+    ViewData["Title"] = "قائمة العملاء";
+}
+
+<div dir="rtl" class="container mt-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4" style="gap: 15px;">
+        <h2 class="text-primary mb-0">قائمة العملاء</h2>
+
+        <div class="d-flex align-items-center" style="gap: 10px;">
+            <!-- فورم البحث -->
+            <form asp-action="Index" method="get" class="d-flex align-items-center" style="gap:10px;">
+                <input type="text" name="searchName" class="form-control" placeholder="ابحث بالاسم..." />
+                <button type="submit" class="btn btn-secondary px-3 py-1">بحث</button>
+            </form>
+
+            <!-- زر العودة للرئيسية -->
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary px-4 py-2 rounded">
+                الرئيسية
+            </a>
+        </div>
+    </div>
+
+    <hr />
+
+    <table class="table table-bordered table-striped text-center align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>الاسم</th>
+                <th>رقم التلفون</th>
+                <th>إجمالي المشتريات</th>
+                <th>تفاصيل</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Any())
+            {
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td>@c.Name</td>
+                        <td>@c.Phone</td>
+                        <td>@c.TotalPurchases.ToString("0.00") ج.م</td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@c.Id" class="btn btn-sm btn-info">التفاصيل</a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-muted">لا يوجد عملاء مطابقين لعملية البحث</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<style>
+    body {
+        background: #f8f9fa;
+        font-family: 'Cairo', sans-serif;
+    }
+
+    .table {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .btn {
+        transition: all 0.3s ease;
+    }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+</style>

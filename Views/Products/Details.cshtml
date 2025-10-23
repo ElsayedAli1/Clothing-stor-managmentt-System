@@ -1,0 +1,50 @@
+﻿@model ElabdStor.Models.Product
+@{
+    ViewData["Title"] = "تفاصيل المنتج";
+}
+
+<h2 class="text-primary mb-4 text-center">تفاصيل المنتج</h2>
+
+<div class="card shadow-lg p-4">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <h5 class="fw-bold">اسم المنتج:</h5>
+            <p>@Model.Name</p>
+        </div>
+
+        <div class="col-md-6">
+            <h5 class="fw-bold">التصنيف:</h5>
+            <p>@Model.Category?.Name</p>
+        </div>
+
+        <div class="col-md-4">
+            <h5 class="fw-bold">سعر الشراء:</h5>
+            <p>@Model.PurchasePrice.ToString("0.00") جنيه</p>
+        </div>
+
+        <div class="col-md-4">
+            <h5 class="fw-bold">سعر الجملة:</h5>
+            <p>@Model.WholesalePrice.ToString("0.00") جنيه</p>
+        </div>
+
+        <div class="col-md-4">
+            <h5 class="fw-bold">سعر نص الجملة:</h5>
+            <p>@Model.HalfWholesalePrice.ToString("0.00") جنيه</p>
+        </div>
+
+        <div class="col-md-4">
+            <h5 class="fw-bold">سعر التجزئة:</h5>
+            <p>@Model.RetailPrice.ToString("0.00") جنيه</p>
+        </div>
+
+        <div class="col-md-4">
+            <h5 class="fw-bold">الكمية بالمخزون:</h5>
+            <p>@Model.QuantityInStock قطعة</p>
+        </div>
+    </div>
+
+    <div class="mt-4 text-center">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning px-4">تعديل</a>
+        <a asp-action="Index" class="btn btn-secondary px-4">رجوع للقائمة</a>
+    </div>
+</div>

@@ -1,0 +1,27 @@
+﻿@model ElabdStor.Models.Expense
+
+<div dir="rtl">
+    <h5 class="text-center mb-3 text-primary">🧾 تفاصيل المصروف</h5>
+    <table class="table table-bordered">
+        <tr>
+            <th>رقم المصروف</th>
+            <td>@Model.Id</td>
+        </tr>
+        <tr>
+            <th>بند الصرف</th>
+            <td>@Model.Category</td>
+        </tr>
+        <tr>
+            <th>المبلغ</th>
+            <td>@Model.Amount.ToString("N2") ج.م</td>
+        </tr>
+        <tr>
+            <th>الوصف</th>
+            <td>@(string.IsNullOrEmpty(Model.Description) ? "— لا يوجد —" : Model.Description)</td>
+        </tr>
+        <tr>
+            <th>تاريخ الإنشاء</th>
+            <td>@Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
+        </tr>
+    </table>
+</div>

@@ -1,0 +1,145 @@
+﻿@model ElabdStor.ViewModels.CustomerDetailsViewModel
+
+@{
+    ViewData["Title"] = "تفاصيل العميل";
+}
+
+<h2 class="text-primary mb-3">تفاصيل العميل</h2>
+
+<div class="mb-3">
+    <strong>الاسم:</strong> @Model.Name <br />
+    <strong>رقم الهاتف:</strong> @Model.Phone
+</div>
+<div class="mt-4">
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> عودة إلى كشف الحساب
+    </a>
+    <hr />
+</div>
+
+
+@foreach (var sale in Model.Sales)
+{
+    <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between">
+            <div>
+                <strong>فاتورة رقم:</strong> @sale.SaleId
+                <span class="ms-3"><strong>التاريخ:</strong> @sale.SaleDate.ToString("yyyy-MM-dd HH:mm")</span>
+            </div>
+            <div>
+                <strong>إجمالي الفاتورة:</strong> @sale.TotalAmount.ToString("0.00") ج.م
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>كود</th>
+                        <th>اسم المنتج</th>
+                        <th>السعر</th>
+                        <th>الكمية</th>
+                        <th>إجمالي</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in sale.Items)
+                    {
+                        <tr>
+                            <td>@item.ProductCode</td>
+                            <td>@item.ProductName</td>
+                            <td>@item.UnitPrice.ToString("0.00")</td>
+                            <td>@item.Quantity</td>
+                            <td>@item.ItemTotal.ToString("0.00")</td>
+                            <td>
+                                <button class="btn btn-warning btn-sm return-btn"
+                                        data-saleid="@sale.SaleId"
+                                        data-productid="@item.ProductId"
+                                        data-quantity="@item.Quantity"
+                                        data-unitprice="@item.UnitPrice">
+                                    مرتجع
+                                </button>
+                            </td>
+
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+@* <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> *@
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        function getAntiForgeryToken() {
+            const t = document.querySelector('input[name="__RequestVerificationToken"]');
+            return t ? t.value : null;
+        }
+
+        document.querySelectorAll('.return-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const saleId = parseInt(this.dataset.saleid);
+                const productId = parseInt(this.dataset.productid);
+                const maxQty = parseInt(this.dataset.quantity);
+                const unitPrice = parseFloat(this.dataset.unitprice);
+
+                // ✅ تسجيل القيم للتأكد إنها صحيحة قبل الإرسال
+                console.log('--- RETURN BUTTON DEBUG ---');
+                console.log('Button HTML:', this.outerHTML);
+                console.log('SaleId:', saleId, 'ProductId:', productId, 'MaxQty:', maxQty, 'UnitPrice:', unitPrice);
+
+                Swal.fire({
+                    title: 'كمية المرتجع',
+                    input: 'number',
+                    inputAttributes: { min: 1, max: maxQty, step: 1 },
+                    inputValue: 1,
+                    showCancelButton: true,
+                    confirmButtonText: 'تأكيد',
+                    cancelButtonText: 'إلغاء'
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        const qty = parseInt(result.value);
+                        if (!qty || qty < 1 || qty > maxQty) {
+                            Swal.fire('خطأ', 'كمية غير صحيحة', 'error');
+                            return;
+                        }
+                        const token = getAntiForgeryToken();
+
+                        // ✅ سجل الحمولة قبل الإرسال
+                        const payload = { saleId: saleId, productId: productId, quantity: qty };
+                        console.log('Sending payload:', payload);
+
+                        try {
+                            const res = await fetch('/Sales/ReturnProduct', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'RequestVerificationToken': token || ''
+                                },
+                                body: JSON.stringify(payload)
+                            });
+
+                            console.log('Response status:', res.status);
+                            const json = await res.json();
+                            console.log('Response JSON:', json);
+
+                            if (!res.ok) {
+                                Swal.fire('خطأ', json.message || `Server ${res.status}`, 'error');
+                                return;
+                            }
+
+                            if (json.success) {
+                                Swal.fire('تم', json.message, 'success').then(() => location.reload());
+                            } else {
+                                Swal.fire('خطأ', json.message, 'error');
+                            }
+                        } catch (e) {
+                            console.error('FETCH ERROR:', e);
+                            Swal.fire('خطأ', 'تعذر الاتصال بالسيرفر', 'error');
+                        }
+                    }
+                });
+            });
+        });
+    });
+</script>

@@ -1,0 +1,169 @@
+﻿@model IEnumerable<ElabdStor.Models.Expense>
+@{
+    ViewData["Title"] = "قائمة المصروفات";
+}
+
+<div class="container mt-4" dir="rtl">
+
+    <h2 class="text-primary mb-4 text-center">📋 قائمة المصروفات</h2>
+
+    <!-- رسائل النجاح أو الخطأ -->
+    @if (ViewBag.SuccessMessage != null)
+    {
+        <div class="alert alert-success text-center">@ViewBag.SuccessMessage</div>
+    }
+    else if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger text-center">@ViewBag.ErrorMessage</div>
+    }
+
+    <!-- فلترة بالتاريخ -->
+    <form method="get" asp-action="Index" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <label class="form-label">من تاريخ</label>
+            <input type="date" name="startDate" value="@ViewBag.StartDate" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">إلى تاريخ</label>
+            <input type="date" name="endDate" value="@ViewBag.EndDate" class="form-control" />
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">🔍 عرض</button>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <a asp-action="Create" class="btn btn-success w-100">➕ إضافة مصروف جديد</a>
+        </div>
+    </form>
+
+    <!-- إجمالي المصروفات -->
+    <div class="alert alert-info text-center fw-bold fs-5">
+        💰 إجمالي المصروفات: @ViewBag.Total.ToString("N2") جنيه
+    </div>
+
+    <!-- الجدول --><
+
+    <div class="table-responsive">
+        <div id="alert-container" class="mt-3"></div>
+        <table class="table table-bordered table-striped text-center align-middle shadow-sm">
+            <thead class="table-primary">
+                <tr>
+                    <th>#</th>
+                    <th>بند الصرف</th>
+                    <th>المبلغ</th>
+                    <th>الوصف</th>
+                    <th>التاريخ</th>
+                    <th>العمليات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    int index = 1;
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@index</td>
+                            <td>@item.Category</td>
+                            <td>@item.Amount.ToString("N2")</td>
+                            <td>@(string.IsNullOrEmpty(item.Description) ? "-" : item.Description)</td>
+                            <td>@item.CreatedAt.ToString("yyyy/MM/dd hh:mm tt")</td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">✏️ تعديل</a>
+                                   
+                                    <!-- حذف -->
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteExpense(@item.Id)">🗑️ حذف</button>
+
+                                </div>
+                            </td>
+                        </tr>
+                        index++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-muted">لا توجد مصروفات في الفترة المحددة.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    
+
+</div>
+<!-- مودال عرض التفاصيل -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="detailsModalLabel">تفاصيل المصروف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body" id="detailsModalBody">
+                <div class="text-center text-muted">جارٍ التحميل...</div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- تنسيقات إضافية -->
+<style>
+    h2 {
+        letter-spacing: 1px;
+    }
+
+    .btn {
+        transition: all 0.2s ease-in-out;
+    }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+</style>
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <script>
+        // دالة الحذف باستخدام AJAX
+        function deleteExpense(id) {
+            if (!confirm("هل أنت متأكد أنك تريد حذف هذا المصروف؟"))
+                return;
+
+            $.ajax({
+                url: '/Expenses/DeleteAjax',
+                type: 'POST',
+                data: { id: id },
+                success: function (res) {
+                    showAlert(res.message, res.success ? 'success' : 'danger');
+
+                    if (res.success) {
+                        // إزالة الصف بعد نجاح الحذف
+                        $(`button[onclick='deleteExpense(${id})']`).closest('tr').fadeOut(500, function () {
+                            $(this).remove();
+                        });
+                    }
+                },
+                error: function () {
+                    showAlert("حدث خطأ أثناء الاتصال بالخادم.", "danger");
+                }
+            });
+        }
+
+        // دالة عرض الرسالة أعلى الصفحة
+        function showAlert(message, type) {
+            const alertBox = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>`;
+
+            // عرضها في المكان المخصص
+            $("#alert-container").html(alertBox);
+
+            // إخفاؤها بعد 3 ثواني تلقائيًا
+            setTimeout(() => {
+                $(".alert").alert('close');
+            }, 3000);
+        }
+    </script>
+}

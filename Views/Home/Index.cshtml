@@ -1,0 +1,109 @@
+﻿@{
+    ViewData["Title"] = "الصفحة الرئيسية";
+}
+
+<div dir="rtl" class="container text-center mt-5">
+
+    <!-- العنوان -->
+    <h1 class="display-5 fw-bold text-primary mb-2">مرحبًا بك في نظام العبد ستور</h1>
+    <p class="lead text-muted mb-5">نظام إدارة المبيعات والمخزون لمحل <strong>العبد ستور - ملابس رجالي</strong></p>
+
+    <!-- شبكة الأزرار -->
+    <div class="row justify-content-center g-4">
+
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Products" asp-action="Index" class="btn btn-outline-primary btn-lg w-100 shadow-sm py-3 rounded-3">
+                🧥 المنتجات
+            </a>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Category" asp-action="Index" class="btn btn-outline-success btn-lg w-100 shadow-sm py-3 rounded-3">
+                🗂️ التصنيفات
+            </a>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Customers" asp-action="Index" class="btn btn-outline-info btn-lg w-100 shadow-sm py-3 rounded-3">
+                👨‍💼 العملاء
+            </a>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Sales" asp-action="Index" class="btn btn-outline-warning btn-lg w-100 shadow-sm py-3 rounded-3">
+                💸 المبيعات
+            </a>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Sales" asp-action="Create" class="btn btn-outline-danger btn-lg w-100 shadow-sm py-3 rounded-3">
+                🧾 إنشاء فاتورة بيع
+            </a>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Sales" asp-action="Report" class="btn btn-outline-secondary btn-lg w-100 shadow-sm py-3 rounded-3">
+                📊 كشف حساب المبيعات
+            </a>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Returns" asp-action="Index" class="btn btn-outline-dark btn-lg w-100 shadow-sm py-3 rounded-3">
+                🔁 المرتجعات
+            </a>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Purchases" asp-action="Create" class="btn btn-outline-primary btn-lg w-100 shadow-sm py-3 rounded-3">
+                🧾 فاتورة شراء
+            </a>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Suppliers" asp-action="Index" class="btn btn-outline-success btn-lg w-100 shadow-sm py-3 rounded-3">
+                🚚 الموردين
+            </a>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Purchases" asp-action="Index" class="btn btn-outline-info btn-lg w-100 shadow-sm py-3 rounded-3">
+                📦 المشتريات
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Expenses" asp-action="Index" class="btn btn-outline-secondary btn-lg w-100 shadow-sm py-3 rounded-3">
+                💰 المصروفات
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a asp-controller="Expenses" asp-action="Report" class="btn btn-outline-secondary btn-lg w-100 shadow-sm py-3 rounded-3">
+                📅 تقرير المصروفات
+            </a>
+        </div>
+
+
+    </div>
+
+</div>
+
+<!-- تحسينات إضافية -->
+<style>
+    body {
+        background: #f8f9fa;
+        font-family: 'Cairo', sans-serif;
+    }
+
+    h1 {
+        letter-spacing: 1px;
+    }
+
+    .btn {
+        transition: all 0.3s ease;
+        font-size: 1.1rem;
+    }
+
+        .btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+</style>

@@ -1,0 +1,72 @@
+﻿@model ElabdStor.Models.Expense
+@{
+    ViewData["Title"] = "تعديل مصروف";
+}
+
+<div class="container mt-4" dir="rtl">
+    <h2 class="text-warning mb-4 text-center">✏️ تعديل بند مصروف</h2>
+
+    <!-- رسائل الخطأ -->
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger text-center">@ViewBag.ErrorMessage</div>
+    }
+
+    <form asp-action="Edit" method="post" class="shadow-sm p-4 rounded bg-white border">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+
+        <div class="mb-3">
+            <label asp-for="Category" class="form-label fw-bold">بند الصرف</label>
+            <input asp-for="Category" class="form-control" />
+            <span asp-validation-for="Category" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Amount" class="form-label fw-bold">المبلغ</label>
+            <input asp-for="Amount" class="form-control" />
+            <span asp-validation-for="Amount" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label fw-bold">الوصف (اختياري)</label>
+            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="CreatedAt" class="form-label fw-bold">تاريخ الإنشاء</label>
+            <input asp-for="CreatedAt" class="form-control" readonly />
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a asp-action="Index" class="btn btn-secondary">⬅️ رجوع</a>
+            <button type="submit" class="btn btn-warning text-white">💾 حفظ التعديلات</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // تنبيه المستخدم عند محاولة حفظ بدون تغيير
+        let formChanged = false;
+        $("input, textarea").on("input", function () {
+            formChanged = true;
+        });
+
+        $("form").on("submit", function () {
+            if (!formChanged) {
+                return confirm("لم تقم بتغيير أي بيانات، هل تريد الحفظ كما هي؟");
+            }
+            return confirm("هل أنت متأكد من حفظ التعديلات؟");
+        });
+    </script>
+}
+
+<style>
+    form {
+        max-width: 600px;
+        margin: auto;
+    }
+</style>

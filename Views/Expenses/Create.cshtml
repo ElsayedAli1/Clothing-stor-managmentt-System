@@ -1,0 +1,64 @@
+﻿@model ElabdStor.Models.Expense
+@{
+    ViewData["Title"] = "إضافة مصروف جديد";
+}
+
+<div class="container mt-4" dir="rtl">
+    <h2 class="text-primary mb-4 text-center">➕ إضافة بند مصروف جديد</h2>
+
+    <!-- رسائل النجاح أو الخطأ -->
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger text-center">@ViewBag.ErrorMessage</div>
+    }
+
+    <form asp-action="Create" method="post" class="shadow-sm p-4 rounded bg-white border">
+        <div class="mb-3">
+            <label asp-for="Category" class="form-label fw-bold">بند الصرف</label>
+            <input asp-for="Category" class="form-control" placeholder="مثلاً: كهرباء، نظافة، ..." />
+            <span asp-validation-for="Category" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Amount" class="form-label fw-bold">المبلغ</label>
+            <input asp-for="Amount" class="form-control" placeholder="أدخل المبلغ بالجنيه" />
+            <span asp-validation-for="Amount" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label fw-bold">الوصف (اختياري)</label>
+            <textarea asp-for="Description" class="form-control" rows="3" placeholder="مثلاً: فاتورة كهرباء شهر أكتوبر"></textarea>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a asp-action="Index" class="btn btn-secondary">⬅️ رجوع للقائمة</a>
+            <button type="submit" class="btn btn-success">💾 حفظ المصروف</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // تأكيد قبل الحفظ
+        $("form").on("submit", function () {
+            return confirm("هل تريد بالتأكيد حفظ هذا المصروف؟");
+        });
+    </script>
+}
+
+<style>
+    h2 {
+        letter-spacing: 1px;
+    }
+
+    form {
+        max-width: 600px;
+        margin: auto;
+    }
+
+    textarea {
+        resize: none;
+    }
+</style>

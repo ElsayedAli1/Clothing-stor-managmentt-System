@@ -1,0 +1,73 @@
+﻿@model ElabdStor.Models.Product
+@{
+    ViewData["Title"] = "تعديل المنتج";
+}
+
+<h2 class="text-primary mb-4 text-center">تعديل بيانات المنتج</h2>
+
+<form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <div class="card shadow-sm p-4">
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="Name" class="form-label">اسم المنتج</label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Code" class="form-label">كود المنتج</label>
+                <input asp-for="Code" class="form-control" />
+                <span asp-validation-for="Code" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="CategoryId" class="form-label">التصنيف</label>
+                <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories"></select>
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="PurchasePrice" class="form-label">سعر الشراء</label>
+                <input asp-for="PurchasePrice" class="form-control" />
+                <span asp-validation-for="PurchasePrice" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="WholesalePrice" class="form-label">سعر الجملة</label>
+                <input asp-for="WholesalePrice" class="form-control" />
+                <span asp-validation-for="WholesalePrice" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="HalfWholesalePrice" class="form-label">نص الجملة</label>
+                <input asp-for="HalfWholesalePrice" class="form-control" />
+                <span asp-validation-for="HalfWholesalePrice" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="RetailPrice" class="form-label">سعر التجزئة</label>
+                <input asp-for="RetailPrice" class="form-control" />
+                <span asp-validation-for="RetailPrice" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="QuantityInStock" class="form-label">الكمية بالمخزون</label>
+                <input asp-for="QuantityInStock" class="form-control" />
+                <span asp-validation-for="QuantityInStock" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center">
+            <button type="submit" class="btn btn-warning px-4">تحديث البيانات</button>
+            <a asp-action="Index" class="btn btn-secondary px-4">رجوع للقائمة</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,126 @@
+﻿@model IEnumerable<ElabdStor.Models.Product>
+
+@{
+    ViewData["Title"] = "قائمة المنتجات";
+}
+
+<h2 class="text-primary mb-4">قائمة المنتجات</h2>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <!-- حقل البحث -->
+    <input type="text" id="searchCode" class="form-control w-50" placeholder="ابحث بالكود..." />
+
+    <!-- الأزرار -->
+    <div class="btn-group">
+        <a asp-action="Create" class="btn btn-success">+ إضافة منتج جديد</a>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-light">الرئيسية</a>
+    </div>
+</div>
+
+
+@Html.AntiForgeryToken() <!-- مهم للـCSRF -->
+<!-- جدول عرض المنتجات -->
+<table class="table table-bordered table-striped text-center align-middle" id="productsTable">
+    <thead class="table-dark">
+        <tr>
+            <th>الاسم</th>
+            <th>الكود</th>
+            <th>التصنيف</th>
+            <th>الكمية</th>
+            <th>شراء</th>
+            <th>جملة</th>
+            <th>نص جملة</th>
+            <th>تجزئة</th>
+            <th>إجراءات</th>
+        </tr>
+    </thead>
+    <tbody>
+        @* سيتم ملء tbody بالـAJAX *@
+    </tbody>
+</table>
+
+@section Scripts {
+    @* <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+ *@
+    <script>
+        $(document).ready(function () {
+
+            // دالة لتحميل المنتجات عبر AJAX
+            function loadProducts(code) {
+                $.getJSON('@Url.Action("SearchByCode", "Products")', { code: code }, function (data) {
+                    var tbody = $("#productsTable tbody");
+                    tbody.empty();
+
+                    if (data.length === 0) {
+                        tbody.append('<tr><td colspan="9">لا يوجد منتجات</td></tr>');
+                        return;
+                    }
+
+                    $.each(data, function (i, item) {
+                        var row = '<tr id="row-' + item.id + '">' +
+                            '<td>' + item.name + '</td>' +
+                            '<td>' + item.code + '</td>' +
+                            '<td>' + (item.category || '') + '</td>' +
+                            '<td>' + item.quantityInStock + '</td>' +
+                            '<td>' + item.purchasePrice.toFixed(2) + '</td>' +
+                            '<td>' + item.wholesalePrice.toFixed(2) + '</td>' +
+                            '<td>' + item.halfWholesalePrice.toFixed(2) + '</td>' +
+                            '<td>' + item.retailPrice.toFixed(2) + '</td>' +
+                            '<td>' +
+                                '<a href="/Products/Edit/' + item.id + '" class="btn btn-warning btn-sm">تعديل</a> ' +
+                                '<a href="/Products/Details/' + item.id + '" class="btn btn-info btn-sm">تفاصيل</a> ' +
+                                '<button class="btn btn-danger btn-sm delete-btn" data-id="' + item.id + '">حذف</button>' +
+                            '</td>' +
+                        '</tr>';
+                        tbody.append(row);
+                    });
+                });
+            }
+
+            // البحث عند الكتابة في حقل البحث
+            $("#searchCode").on("keyup", function () {
+                var code = $(this).val();
+                loadProducts(code);
+            });
+
+            // تحميل كل المنتجات عند فتح الصفحة
+            loadProducts('');
+
+            // حذف ديناميكي مع SweetAlert
+            $(document).on("click", ".delete-btn", function () {
+                var id = $(this).data("id");
+                var token = $('input[name="__RequestVerificationToken"]').val(); // CSRF token
+
+                Swal.fire({
+                    title: "هل أنت متأكد؟",
+                    text: "لن يمكنك التراجع بعد الحذف!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "نعم، احذف",
+                    cancelButtonText: "إلغاء"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/Products/Delete/' + id,
+                            type: 'POST',
+                            headers: { 'RequestVerificationToken': token },
+                            success: function (data) {
+                                if (data.success) {
+                                    $("#row-" + id).fadeOut();
+                                    Swal.fire("تم الحذف!", data.message, "success");
+                                } else {
+                                    Swal.fire("خطأ!", data.message, "error");
+                                }
+                            },
+                            error: function () {
+                                Swal.fire("خطأ!", "حدث خطأ أثناء الاتصال بالخادم.", "error");
+                            }
+                        });
+                    }
+                });
+            });
+
+        });
+    </script>
+}

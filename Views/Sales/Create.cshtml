@@ -1,0 +1,284 @@
+﻿@model ElabdStor.ViewModels.SaleCreateModel
+
+@{
+    ViewData["Title"] = "فاتورة بيع جديدة";
+}
+
+<h2 class="text-primary mb-3">فاتورة بيع جديدة</h2>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">@TempData["error"]</div>
+}
+@if (TempData["success"] != null)
+{
+    <div class="alert alert-success">@TempData["success"]</div>
+}
+
+<form id="saleForm" method="post" asp-action="Create">
+    @Html.AntiForgeryToken()
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label class="form-label">رقم الهاتف</label>
+            <input type="text" id="customerPhone" asp-for="CustomerPhone" class="form-control" placeholder="010..." />
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">اسم العميل</label>
+            <input type="text" id="customerName" asp-for="CustomerName" class="form-control" placeholder="إسم العميل" readonly />
+        </div>
+
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="button" id="checkCustomerBtn" class="btn btn-info w-100">بحث عن العميل</button>
+        </div>
+    </div>
+
+    <input type="hidden" asp-for="CustomerId" id="customerId" />
+
+    <div id="newCustomerFields" class="row mb-3 d-none">
+        <div class="col-md-6">
+            <label class="form-label text-danger">عميل جديد - ادخل الاسم</label>
+            <input type="text" id="newCustomerName" class="form-control" placeholder="اسم العميل الجديد" />
+        </div>
+    </div>
+
+    <hr />
+
+    <h5>إضافة صنف للفاتورة</h5>
+
+    <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">كود المنتج</label>
+            <input type="text" id="productCode" class="form-control" placeholder="اكتب كود المنتج" />
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">نوع السعر</label>
+            <select id="priceType" class="form-select">
+                <option value="Retail">تجزئة</option>
+                <option value="HalfWholesale">نص جملة</option>
+                <option value="Wholesale">جملة</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label">الكمية</label>
+            <input type="number" id="quantity" class="form-control" min="1" value="1" />
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label">السعر الحالي</label>
+            <input type="text" id="currentPrice" class="form-control" readonly />
+        </div>
+
+        <div class="col-md-2">
+            <button type="button" id="addItemBtn" class="btn btn-success w-100">إضافة</button>
+        </div>
+    </div>
+
+    <table class="table table-bordered mt-3" id="itemsTable">
+        <thead class="table-light">
+            <tr>
+                <th>كود</th>
+                <th>الاسم</th>
+                <th>السعر</th>
+                <th>كمية</th>
+                <th>الإجمالي</th>
+                <th>حذف</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <div class="text-end">
+        <h4>الإجمالي الكلي: <span id="totalAmount">0.00</span> ج.م</h4>
+    </div>
+
+    <input type="hidden" id="ItemsJson" name="ItemsJson" />
+
+    <div class="text-center mt-3">
+        <button type="submit" class="btn btn-primary px-4">حفظ الفاتورة</button>
+        <a asp-action="Index" asp-controller="Sales" class="btn btn-secondary px-4">الغاء</a>
+    </div>
+</form>
+
+@section Scripts {
+   @*  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> *@
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        let items = [];
+
+        function formatMoney(n) {
+            return parseFloat(n).toFixed(2);
+        }
+
+        // ==============================
+        // 🔹 البحث عن العميل بالموبايل
+        // ==============================
+        document.getElementById('checkCustomerBtn').addEventListener('click', async function () {
+            const phone = document.getElementById('customerPhone').value.trim();
+            if (!phone) {
+                Swal.fire('تنبيه', 'من فضلك ادخل رقم الهاتف', 'warning');
+                return;
+            }
+
+            try {
+                const res = await fetch(`/Customers/GetByPhone?phone=${encodeURIComponent(phone)}`);
+                const json = await res.json();
+
+                if (json.success && json.data) {
+                    document.getElementById('customerName').value = json.data.name;
+                    document.getElementById('customerId').value = json.data.id;
+                    document.getElementById('newCustomerFields').classList.add('d-none');
+                    Swal.fire('تم', 'تم العثور على العميل', 'success');
+                } else {
+                    document.getElementById('customerId').value = '';
+                    document.getElementById('customerName').value = '';
+                    document.getElementById('newCustomerFields').classList.remove('d-none');
+                    Swal.fire('عميل جديد', 'لم يتم العثور على هذا الرقم، يمكنك إدخال اسم العميل الجديد', 'info');
+                }
+            } catch (e) {
+                Swal.fire('خطأ', 'حدث خطأ أثناء الاتصال بالسيرفر', 'error');
+            }
+        });
+
+        // ==================================
+        // 🔹 المنتجات والفاتورة
+        // ==================================
+        async function fetchProductByCode(code) {
+            if (!code) return null;
+            try {
+                const res = await fetch(`/Sales/GetProductByCode?code=${encodeURIComponent(code)}`);
+                const json = await res.json();
+                if (json.success) return json.data;
+                return { error: json.message || 'خطأ' };
+            } catch (e) {
+                return { error: 'تعذر الاتصال بالسيرفر' };
+            }
+        }
+
+        document.getElementById('productCode').addEventListener('change', async function () {
+            const code = this.value.trim();
+            const data = await fetchProductByCode(code);
+            if (!data || data.error) {
+                document.getElementById('currentPrice').value = '';
+                if (data?.error) Swal.fire('تنبيه', data.error, 'warning');
+                return;
+            }
+            updatePriceField(data);
+        });
+
+        document.getElementById('priceType').addEventListener('change', async function () {
+            const code = document.getElementById('productCode').value.trim();
+            if (!code) return;
+            const data = await fetchProductByCode(code);
+            if (data && !data.error) updatePriceField(data);
+        });
+
+        function updatePriceField(data) {
+            const priceType = document.getElementById('priceType').value;
+            let price = data.retailPrice;
+            if (priceType === 'Wholesale') price = data.wholesalePrice;
+            if (priceType === 'HalfWholesale') price = data.halfWholesalePrice;
+            document.getElementById('currentPrice').value = formatMoney(price);
+        }
+
+        document.getElementById('addItemBtn').addEventListener('click', async function () {
+            const code = document.getElementById('productCode').value.trim();
+            const qty = parseInt(document.getElementById('quantity').value);
+            const priceType = document.getElementById('priceType').value;
+
+            if (!code) { Swal.fire('خطأ', 'ادخل كود المنتج', 'error'); return; }
+            if (!qty || qty <= 0) { Swal.fire('خطأ', 'الكمية يجب أن تكون رقم صحيح > 0', 'error'); return; }
+
+            const data = await fetchProductByCode(code);
+            if (!data || data.error) { Swal.fire('خطأ', data?.error || 'تعذر جلب بيانات المنتج', 'error'); return; }
+
+            let unitPrice = data.retailPrice;
+            if (priceType === 'Wholesale') unitPrice = data.wholesalePrice;
+            if (priceType === 'HalfWholesale') unitPrice = data.halfWholesalePrice;
+
+            if (data.quantityInStock < qty) {
+                Swal.fire('خطأ', `الكمية المتاحة (${data.quantityInStock}) أقل من المطلوبة`, 'error');
+                return;
+            }
+
+            const existingIndex = items.findIndex(it => it.ProductId === data.id && it.UnitPrice === unitPrice);
+            if (existingIndex >= 0) {
+                items[existingIndex].Quantity += qty;
+            } else {
+                items.push({
+                    ProductId: data.id,
+                    ProductCode: data.code,
+                    ProductName: data.name,
+                    UnitPrice: parseFloat(unitPrice),
+                    Quantity: qty
+                });
+            }
+
+            renderItemsTable();
+            clearItemInputs();
+        });
+
+        function renderItemsTable() {
+            const tbody = document.querySelector('#itemsTable tbody');
+            tbody.innerHTML = '';
+            let total = 0;
+
+            items.forEach((it, idx) => {
+                total += it.UnitPrice * it.Quantity;
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr>
+                        <td>${it.ProductCode}</td>
+                        <td>${it.ProductName}</td>
+                        <td>${formatMoney(it.UnitPrice)}</td>
+                        <td>${it.Quantity}</td>
+                        <td>${formatMoney(it.UnitPrice * it.Quantity)}</td>
+                        <td><button class="btn btn-sm btn-danger btn-remove" data-index="${idx}">حذف</button></td>
+                    </tr>
+                `);
+            });
+
+            document.getElementById('totalAmount').innerText = formatMoney(total);
+            document.getElementById('ItemsJson').value = JSON.stringify(items);
+        }
+
+        function clearItemInputs() {
+            document.getElementById('productCode').value = '';
+            document.getElementById('currentPrice').value = '';
+            document.getElementById('quantity').value = 1;
+        }
+
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('btn-remove')) {
+                const idx = e.target.dataset.index;
+                items.splice(idx, 1);
+                renderItemsTable();
+            }
+        });
+
+        document.getElementById('saleForm').addEventListener('submit', function (e) {
+            if (items.length === 0) {
+                e.preventDefault();
+                Swal.fire('خطأ', 'لا يوجد منتجات في الفاتورة', 'error');
+                return;
+            }
+
+            // في حالة عميل جديد ولم يوجد في النظام
+            const customerId = document.getElementById('customerId').value;
+            if (!customerId) {
+                const newName = document.getElementById('newCustomerName').value.trim();
+                const phone = document.getElementById('customerPhone').value.trim();
+                if (!newName || !phone) {
+                    e.preventDefault();
+                    Swal.fire('خطأ', 'من فضلك أدخل اسم ورقم العميل الجديد', 'error');
+                } else {
+                    // نمرر الاسم إلى الحقل الأصلي قبل الإرسال
+                    document.getElementById('customerName').value = newName;
+                }
+            }
+        });
+    </script>
+}

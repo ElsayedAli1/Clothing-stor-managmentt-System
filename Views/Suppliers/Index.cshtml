@@ -1,0 +1,29 @@
+﻿@model List<ElabdStor.ViewModels.SupplierSummaryViewModel>
+
+<h2 class="text-primary mb-3">قائمة الموردين</h2>
+
+<table class="table table-bordered table-striped text-center align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>الاسم</th>
+            <th>رقم الهاتف</th>
+            <th>إجمالي المشتريات</th>
+            <th>تفاصيل الفواتير</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var s in Model)
+        {
+            <tr>
+                <td>@s.Name</td>
+                <td>@s.Phone</td>
+                <td>@s.TotalPurchasesAmount.ToString("N2") ج.م</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@s.SupplierId" class="btn btn-sm btn-info">
+                        عرض الفواتير
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

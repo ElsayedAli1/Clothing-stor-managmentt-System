@@ -1,0 +1,64 @@
+﻿@model ElabdStor.Models.Sale
+
+@{
+    ViewData["Title"] = "تفاصيل الفاتورة";
+}
+<div class="d-flex justify-content-center align-items-center" style="margin-top: 10vh; gap: 20px;">
+    <h2 class="text-primary mb-0">تفاصيل الفاتورة</h2>
+    <div class="mb-3"> <a asp-action="Report" class="btn btn-secondary">العودة للقائمة السابقه</a> </div>
+</div>
+
+<div class="mt-5">
+    <div class="mb-3">
+        <h5>بيانات العميل:</h5>
+        <p><strong>الاسم:</strong> @Model.Customer?.Name</p>
+        <p><strong>رقم الهاتف:</strong> @Model.Customer?.Phone</p>
+    </div>
+
+    <div class="mb-3">
+        <h5>بيانات الفاتورة:</h5>
+        <p><strong>تاريخ الفاتورة:</strong> @Model.SaleDate.ToString("yyyy-MM-dd HH:mm")</p>
+        <p><strong>عدد المنتجات:</strong> @Model.SaleItems.Count</p>
+    </div>
+</div>
+
+
+<table class="table table-bordered table-striped">
+    <thead class="table-light">
+        <tr>
+            <th>#</th>
+            <th>كود المنتج</th>
+            <th>اسم المنتج</th>
+            <th>الكمية</th>
+            <th>السعر</th>
+            <th>الإجمالي</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int count = 1;
+            decimal totalAmount = 0;
+            foreach (var item in Model.SaleItems)
+            {
+                var itemTotal = item.Quantity * item.UnitPrice;
+                totalAmount += itemTotal;
+            }
+        }
+        @foreach (var item in Model.SaleItems)
+        {
+            <tr>
+                <td>@count</td>
+                <td>@item.Product?.Code</td>
+                <td>@item.Product?.Name</td>
+                <td>@item.Quantity</td>
+                <td>@item.UnitPrice</td>
+                <td>@(item.Quantity* item.UnitPrice)</td>
+            </tr>
+            count++;
+        }
+    </tbody>
+</table>
+
+<div class="text-end">
+    <h4>الإجمالي الكلي: @Model.SaleItems.Sum(si => si.Quantity * si.UnitPrice).ToString("0.00") ج.م</h4>
+</div>

@@ -1,0 +1,29 @@
+﻿@{
+    ViewData["Title"] = "تسجيل الدخول";
+}
+
+<div dir="rtl" class="container mt-5" style="max-width:420px;">
+    <h3 class="mb-4 text-center text-primary fw-bold">تسجيل الدخول</h3>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger text-center">@ViewBag.Error</div>
+    }
+
+    <form asp-action="Login" method="post" class="border rounded-3 shadow-sm p-4 bg-light">
+        <div class="mb-3">
+            <label for="username" class="form-label fw-semibold">اسم المستخدم</label>
+            <input id="username" name="username" class="form-control" placeholder="أدخل اسم المستخدم" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="password" class="form-label fw-semibold">كلمة المرور</label>
+            <input id="password" name="password" type="password" class="form-control" placeholder="••••••••" required />
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <button type="submit" class="btn btn-primary px-4">دخول</button>
+            <a asp-action="ChangePassword" class="btn btn-link">تغيير كلمة المرور</a>
+        </div>
+    </form>
+</div>

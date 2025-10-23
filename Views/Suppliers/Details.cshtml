@@ -1,0 +1,58 @@
+﻿@model ElabdStor.ViewModels.SupplierDetailsViewModel
+
+@{
+    ViewData["Title"] = "تفاصيل المورد";
+}
+
+<h2 class="text-primary mb-3">تفاصيل المورد</h2>
+
+<div class="mb-3">
+    <strong>الاسم:</strong> @Model.Name <br />
+    <strong>رقم الهاتف:</strong> @Model.Phone
+</div>
+
+<a asp-action="Index" class="btn btn-secondary mb-4">
+    <i class="bi bi-arrow-left"></i> عودة إلى كشف الموردين
+</a>
+
+@foreach (var purchase in Model.Purchases)
+{
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <strong>فاتورة رقم:</strong> @purchase.PurchaseId
+                <span class="ms-3">
+                    <strong>التاريخ:</strong> @purchase.PurchaseDate.ToString("yyyy-MM-dd HH:mm")
+                </span>
+            </div>
+            <div>
+                <strong>الإجمالي:</strong> @purchase.TotalAmount.ToString("0.00") ج.م
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>كود المنتج</th>
+                        <th>اسم المنتج</th>
+                        <th>سعر الوحدة</th>
+                        <th>الكمية</th>
+                        <th>الإجمالي</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in purchase.Items)
+                    {
+                        <tr>
+                            <td>@item.ProductCode</td>
+                            <td>@item.ProductName</td>
+                            <td>@item.UnitCost.ToString("0.00")</td>
+                            <td>@item.Quantity</td>
+                            <td>@item.ItemTotal.ToString("0.00")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

@@ -1,0 +1,415 @@
+﻿@model ElabdStor.ViewModels.PurchaseCreateModel
+
+@{
+    ViewData["Title"] = "فاتورة شراء جديدة";
+}
+
+<h2 class="text-primary mb-3">فاتورة شراء جديدة</h2>
+
+@if (TempData["error"] != null)
+{
+    <div class="alert alert-danger">@TempData["error"]</div>
+}
+@if (TempData["success"] != null)
+{
+    <div class="alert alert-success">@TempData["success"]</div>
+}
+
+<form id="purchaseForm" method="post" asp-action="Create">
+    @Html.AntiForgeryToken()
+
+    <!-- ========== المورد ========== -->
+    <!-- ========== المورد ========== -->
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <label class="form-label">رقم الهاتف</label>
+            <input type="text" id="supplierPhone" asp-for="SupplierPhone" class="form-control" placeholder="010..." />
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">اسم المورد</label>
+            <input type="text" id="supplierName" asp-for="SupplierName" class="form-control" readonly />
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">البريد الإلكتروني</label>
+            <input type="email" id="supplierEmail" asp-for="SupplierEmail" class="form-control" />
+        </div>
+
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="button" id="checkSupplierBtn" class="btn btn-info w-100">بحث عن المورد</button>
+        </div>
+    </div>
+
+    <div id="newSupplierFields" class="row mb-3 d-none">
+        <div class="col-md-4">
+            <label class="form-label text-danger">مورد جديد - ادخل الاسم</label>
+            <input type="text" id="newSupplierName" class="form-control" placeholder="اسم المورد الجديد" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">البريد الإلكتروني</label>
+            <input type="email" id="newSupplierEmail" class="form-control" placeholder="Email" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">العنوان</label>
+            <input type="text" id="newSupplierAddress" class="form-control" placeholder="Address" />
+        </div>
+    </div>
+
+
+    <!-- ========== إضافة المنتج ========== -->
+    <h5>إضافة منتج للفاتورة</h5>
+    <div class="row g-2 align-items-end">
+        <div class="col-md-2">
+            <label class="form-label">كود المنتج</label>
+            <input type="text" id="productCode" class="form-control" placeholder="اكتب كود المنتج" />
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="button" id="checkProductBtn" class="btn btn-info w-100">تحقق من الكود</button>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">الاسم</label>
+            <input type="text" id="productName" class="form-control" readonly />
+        </div>
+        <div class="col-md-1">
+            <label class="form-label">الكمية</label>
+            <input type="number" id="quantity" class="form-control" min="1" value="1" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">الفئة</label>
+            <select id="categoryId" class="form-select">
+                <option value="">اختر الفئة</option>
+                @foreach (var cat in Model.Categories)
+                {
+                    <option value="@cat.Id">@cat.Name</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <!-- الأسعار -->
+    <div class="row mt-2 g-2">
+        <div class="col-md-3">
+            <label class="form-label">سعر الشراء</label>
+            <input type="number" step="0.01" id="purchasePrice" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">سعر الجملة</label>
+            <input type="number" step="0.01" id="wholesalePrice" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">نصف الجملة</label>
+            <input type="number" step="0.01" id="halfWholesalePrice" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">التجزئة</label>
+            <input type="number" step="0.01" id="retailPrice" class="form-control" />
+        </div>
+    </div>
+
+    <div class="col-md-12 mt-3">
+        <button type="button" id="addItemBtn" class="btn btn-success w-100" disabled>إضافة المنتج</button>
+    </div>
+
+    <!-- ========== جدول المنتجات ========== -->
+    <table class="table table-bordered mt-3" id="itemsTable">
+        <thead class="table-light">
+            <tr>
+                <th>الكود</th>
+                <th>الاسم</th>
+                <th>سعر الشراء</th>
+                <th>كمية</th>
+                <th>الفئة</th>
+                <th>حذف</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <!-- ========== الإجمالي الكلي (عرض فقط) ========== -->
+    @* <div class="text-end mb-3">
+        <h4>الإجمالي الكلي: <span id="totalAmountText">0.00</span> ج.م</h4>
+    </div>
+ *@
+    <input type="hidden" id="ItemsJson" asp-for="ItemsJson" />
+    <hr />
+
+    <!-- ========== تفاصيل الدفع ========== -->
+    
+    <hr />
+    <div class="text-center mt-3">
+        <button type="submit" class="btn btn-primary px-4">حفظ الفاتورة</button>
+        <a asp-action="Index" asp-controller="Home" class="btn btn-secondary px-4">الغاء</a>
+    </div>
+</form>
+
+@section Scripts {
+  @*   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> *@
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let items = [];
+
+            const supplierPhone = document.getElementById('supplierPhone');
+            const supplierName = document.getElementById('supplierName');
+            const supplierEmail = document.getElementById('supplierEmail');
+            const newSupplierFields = document.getElementById('newSupplierFields');
+            const newSupplierName = document.getElementById('newSupplierName');
+            const newSupplierEmail = document.getElementById('newSupplierEmail');
+            const newSupplierAddress = document.getElementById('newSupplierAddress');
+            const checkSupplierBtn = document.getElementById('checkSupplierBtn');
+
+            const productCode = document.getElementById('productCode');
+            const productName = document.getElementById('productName');
+            const quantity = document.getElementById('quantity');
+            const categoryId = document.getElementById('categoryId');
+            const checkProductBtn = document.getElementById('checkProductBtn');
+            const addItemBtn = document.getElementById('addItemBtn');
+
+            const purchasePrice = document.getElementById('purchasePrice');
+            const wholesalePrice = document.getElementById('wholesalePrice');
+            const halfWholesalePrice = document.getElementById('halfWholesalePrice');
+            const retailPrice = document.getElementById('retailPrice');
+
+            const itemsTableBody = document.querySelector('#itemsTable tbody');
+            const totalAmountSpan = document.getElementById('totalAmount');
+            const itemsJsonInput = document.getElementById('ItemsJson');
+            const purchaseForm = document.getElementById('purchaseForm');
+
+            // ===== بحث المورد =====
+            checkSupplierBtn.addEventListener('click', async () => {
+                const phone = supplierPhone.value.trim();
+                if (!phone) return Swal.fire('تنبيه', 'من فضلك ادخل رقم الهاتف', 'warning');
+
+                try {
+                    const res = await fetch(`/Suppliers/GetByPhone?phone=${encodeURIComponent(phone)}`);
+                    const json = await res.json();
+
+                    if (json.success && json.data) {
+                        supplierName.value = json.data.name;
+                        supplierEmail.value = json.data.email || '';
+                        newSupplierFields.classList.add('d-none');
+                    } else {
+                        supplierName.value = '';
+                        supplierEmail.value = '';
+                        newSupplierFields.classList.remove('d-none');
+                        newSupplierName.focus();
+                    }
+                } catch {
+                    Swal.fire('خطأ', 'تعذر الاتصال بالسيرفر', 'error');
+                }
+            });
+
+            // ===== تحقق كود المنتج =====
+            checkProductBtn.addEventListener('click', async () => {
+                const code = productCode.value.trim();
+                if (!code) return Swal.fire('خطأ', 'ادخل كود المنتج', 'error');
+
+                try {
+                    const res = await fetch(`/Products/GetByCode?code=${encodeURIComponent(code)}`);
+                    if (!res.ok) throw new Error('response not ok');
+                    const json = await res.json();
+
+                    if (json.success && json.data) {
+                        const p = json.data;
+                        productName.value = p.name;
+                        purchasePrice.value = parseFloat(p.purchasePrice).toFixed(2);
+                        wholesalePrice.value = parseFloat(p.wholesalePrice).toFixed(2);
+                        halfWholesalePrice.value = parseFloat(p.halfWholesalePrice).toFixed(2);
+                        retailPrice.value = parseFloat(p.retailPrice).toFixed(2);
+                        categoryId.value = p.categoryId || '';
+                        productName.readOnly = true;
+                        addItemBtn.disabled = false;
+                        Swal.fire('موجود', 'تم العثور على المنتج - يمكنك تعديل الأسعار إذا لزم', 'info');
+                    } else {
+                        productName.value = '';
+                        purchasePrice.value = '';
+                        wholesalePrice.value = '';
+                        halfWholesalePrice.value = '';
+                        retailPrice.value = '';
+                        categoryId.value = '';
+                        productName.readOnly = false;
+                        addItemBtn.disabled = false;
+                        Swal.fire('جديد', 'المنتج غير موجود - أدخل بياناته كاملة', 'success');
+                    }
+                } catch {
+                    Swal.fire('خطأ', 'تعذر الاتصال بالسيرفر أثناء البحث عن المنتج', 'error');
+                }
+            });
+
+            // ===== إضافة منتج =====
+            addItemBtn.addEventListener('click', () => {
+                const code = productCode.value.trim();
+                const name = productName.value.trim();
+                const qty = parseInt(quantity.value) || 0;
+                const catId = categoryId.value;
+                const pur = parseFloat(purchasePrice.value) || 0;
+                const w = parseFloat(wholesalePrice.value) || 0;
+                const hw = parseFloat(halfWholesalePrice.value) || 0;
+                const r = parseFloat(retailPrice.value) || 0;
+
+                if (!code || !name || qty <= 0 || pur <= 0 || !catId)
+                    return Swal.fire('خطأ', 'أكمل بيانات المنتج بشكل صحيح', 'error');
+
+                items.push({
+                    Code: code, Name: name, Quantity: qty,
+                    PurchasePrice: pur, WholesalePrice: w,
+                    HalfWholesalePrice: hw, RetailPrice: r,
+                    CategoryId: parseInt(catId)
+                });
+
+                renderItemsTable();
+                clearItemInputs();
+            });
+
+            function renderItemsTable() {
+                itemsTableBody.innerHTML = '';
+                let total = 0;
+                items.forEach((it, i) => {
+                    total += it.PurchasePrice * it.Quantity;
+                    const catName = document.querySelector(`#categoryId option[value="${it.CategoryId}"]`)?.text || '';
+                    itemsTableBody.insertAdjacentHTML('beforeend', `
+                        <tr>
+                            <td>${it.Code}</td>
+                            <td>${it.Name}</td>
+                            <td>${it.PurchasePrice.toFixed(2)}</td>
+                            <td>${it.Quantity}</td>
+                            <td>${catName}</td>
+                            <td><button type="button" class="btn btn-sm btn-danger btn-remove" data-index="${i}">حذف</button></td>
+                        </tr>
+                    `);
+                });
+                totalAmountSpan.innerText = total.toFixed(2);
+                itemsJsonInput.value = JSON.stringify(items);
+            }
+
+            function clearItemInputs() {
+                productCode.value = '';
+                productName.value = '';
+                purchasePrice.value = '';
+                wholesalePrice.value = '';
+                halfWholesalePrice.value = '';
+                retailPrice.value = '';
+                quantity.value = 1;
+                categoryId.value = '';
+                addItemBtn.disabled = true;
+            }
+
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('btn-remove')) {
+                    const i = parseInt(e.target.dataset.index);
+                    if (!isNaN(i)) { items.splice(i, 1); renderItemsTable(); }
+                }
+            });
+
+            // ===== إرسال الفورم =====
+            purchaseForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (items.length === 0)
+                    return Swal.fire('خطأ', 'أضف منتج واحد على الأقل', 'error');
+
+                const phone = supplierPhone.value.trim();
+                let name = supplierName.value.trim();
+                if (newSupplierFields.classList.contains('d-none') === false)
+                    name = newSupplierName.value.trim();
+
+                if (!phone || !name)
+                    return Swal.fire('خطأ', 'يجب إدخال رقم واسم المورد', 'error');
+
+                Swal.fire({
+                    title: 'تأكيد',
+                    html: `سيتم حفظ ${items.length} منتج.`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'موافق',
+                    cancelButtonText: 'إلغاء'
+                }).then(r => {
+                    if (r.isConfirmed) {
+                        itemsJsonInput.value = JSON.stringify(items);
+                        purchaseForm.submit();
+                    }
+                });
+            });
+        });
+                // عند البحث عن المورد
+        $("#checkSupplierBtn").click(function () {
+            const phone = $("#supplierPhone").val().trim();
+            if (!phone) {
+                Swal.fire("تنبيه", "من فضلك أدخل رقم الهاتف أولا", "warning");
+                return;
+            }
+
+            $.get(`/Suppliers/GetByPhone?phone=${phone}`, function (res) {
+                if (res.success) {
+                    // المورد موجود
+                    $("#supplierName").val(res.data.name);
+                    $("#supplierEmail").val(res.data.email);
+                    $("#newSupplierFields").addClass("d-none");
+                    Swal.fire("موجود", "المورد موجود بالفعل وتم تحميل بياناته", "info");
+                } else {
+                    // مورد جديد
+                    $("#supplierName").val(""); // نفرغ الحقل القديم
+                    $("#supplierEmail").val("");
+                    $("#newSupplierFields").removeClass("d-none");
+                    Swal.fire("جديد", "مورد جديد، من فضلك أدخل بياناته", "success");
+                }
+            });
+        });
+
+        // قبل حفظ الفاتورة – ننسخ البيانات الجديدة للموديل الأصلي
+        $("form").on("submit", function () {
+            if (!$("#newSupplierFields").hasClass("d-none")) {
+                $("#supplierName").val($("#newSupplierName").val());
+                $("#supplierEmail").val($("#newSupplierEmail").val());
+                $("#supplierAddress").val($("#newSupplierAddress").val());
+            }
+        });
+
+
+                   document.addEventListener("DOMContentLoaded", function () {
+
+            // دالة إعادة رسم الجدول (مثال، حسب كودك)
+            function renderItemsTable() {
+                let total = 0;
+
+                $("#itemsTable tbody tr").each(function () {
+                    const qty = parseFloat($(this).find(".qty").val()) || 0;
+                    const price = parseFloat($(this).find(".purchasePrice").val()) || 0;
+                    total += qty * price;
+                });
+
+                // نتأكد الأول إن العناصر موجودة
+                const totalText = document.getElementById("totalAmountText");
+                const totalInput = document.getElementById("totalAmountInput");
+
+                if (totalText) totalText.innerText = total.toFixed(2);
+                if (totalInput) totalInput.value = total.toFixed(2);
+
+                calculateRemaining();
+            }
+
+            // عند كتابة المبلغ المدفوع نحسب المتبقي
+            $("#paidAmount").on("input", function () {
+                calculateRemaining();
+            });
+
+                    function renderItemsTable() {
+            let total = 0;
+            items.forEach(it => total += it.PurchasePrice * it.Quantity);
+            $("#totalAmountText").text(total.toFixed(2));
+            $("#totalAmountInput").val(total.toFixed(2)); // ← مهم
+            calculateRemaining();
+        }
+
+        function calculateRemaining() {
+            const total = parseFloat($("#totalAmountInput").val()) || 0;
+            const paid = parseFloat($("#paidAmount").val()) || 0;
+            const remaining = total - paid;
+            $("#remainingAmount").val(remaining.toFixed(2)); // ← مهم
+        }
+
+
+            // استدعاء أولي (مثلاً بعد إضافة منتج)
+            window.renderItemsTable = renderItemsTable;
+        });
+
+    </script>
+}

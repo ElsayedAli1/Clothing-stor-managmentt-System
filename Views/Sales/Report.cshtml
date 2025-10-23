@@ -1,0 +1,62 @@
+﻿@model IEnumerable<ElabdStor.Models.Sale>
+
+@{
+    ViewData["Title"] = "كشف حساب المبيعات";
+}
+<div class="text-center mb-4">
+    <h2 class="text-primary">كشف حساب المبيعات</h2>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-3 px-4 py-2 rounded">
+        الرئيسية
+    </a>
+</div>
+<br />
+<form method="post" asp-action="Report" class="row g-3 mb-4">
+    <div class="col-md-4">
+        <label class="form-label">من تاريخ</label>
+        <input type="date" name="fromDate" class="form-control" required value="@ViewBag.FromDate?.ToString("yyyy-MM-dd")" />
+    </div>
+    <div class="col-md-2 align-self-end">
+        <button type="submit" class="btn btn-primary w-100">عرض</button>
+    </div>
+   
+</form>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table table-bordered table-striped">
+        <thead class="table-light">
+            <tr>
+                <th>رقم الفاتورة</th>
+                <th>تاريخ البيع</th>
+                <th>العميل</th>
+                <th>إجمالي الفاتورة</th>
+                <th>صافي الربح</th>
+                <th>عرض التفاصيل</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var sale in Model)
+            {
+                <tr>
+                    <td>@sale.Id</td>
+                    <td>@sale.SaleDate.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@sale.Customer?.Name</td>
+                    <td>@sale.SaleItems.Sum(i => i.UnitPrice * i.Quantity).ToString("0.00")</td>
+                    <td>@sale.NetProfit.ToString("0.00")</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@sale.Id" class="btn btn-sm btn-info">عرض</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="text-end mt-3">
+        <h5>إجمالي المبيعات: <span class="text-success">@ViewBag.TotalSales.ToString("0.00")</span> ج.م</h5>
+        <h5>إجمالي صافي الربح: <span class="text-primary">@ViewBag.TotalProfit.ToString("0.00")</span> ج.م</h5>
+    </div>
+}
+else if (ViewBag.FromDate != null)
+{
+    <div class="alert alert-warning">لا توجد مبيعات منذ هذا التاريخ.</div>
+}

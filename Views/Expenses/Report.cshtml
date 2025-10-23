@@ -1,0 +1,83 @@
+﻿@model IEnumerable<ElabdStor.Models.Expense>
+@{
+    ViewData["Title"] = "تقرير المصروفات";
+}
+
+<h2 class="text-primary mb-4 text-center">📊 تقرير المصروفات</h2>
+
+<!-- فلترة بالتاريخ -->
+<form method="get" asp-action="Report" class="row justify-content-center mb-4">
+    <div class="col-md-3">
+        <label class="form-label">من تاريخ:</label>
+        <input type="date" name="fromDate" value="@ViewBag.FromDate" class="form-control" />
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">إلى تاريخ:</label>
+        <input type="date" name="toDate" value="@ViewBag.ToDate" class="form-control" />
+    </div>
+
+    <div class="col-md-2 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">عرض</button>
+    </div>
+
+    <div class="col-md-2 d-flex align-items-end">
+        <a asp-action="Report" class="btn btn-secondary w-100">إعادة تعيين</a>
+    </div>
+</form>
+
+<!-- جدول المصروفات -->
+<table class="table table-bordered table-striped text-center align-middle">
+    <thead class="table-primary">
+        <tr>
+            <th>#</th>
+            <th>بند الصرف</th>
+            <th>المبلغ</th>
+            <th>الوصف</th>
+            <th>التاريخ</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int index = 1;
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@index</td>
+                    <td>@item.Category</td>
+                    <td>@item.Amount.ToString("N2")</td>
+                    <td>@(string.IsNullOrEmpty(item.Description) ? "-" : item.Description)</td>
+                    <td>@item.CreatedAt.ToString("yyyy/MM/dd hh:mm tt")</td>
+                </tr>
+                index++;
+            }
+        }
+    </tbody>
+</table>
+
+<!-- الإجمالي -->
+<div class="alert alert-info text-center fs-5 fw-bold mt-4">
+    💰 إجمالي المصروفات: @ViewBag.Total.ToString("N2") جنيه
+</div>
+
+@section Scripts {
+    <script>
+        // لما المستخدم يختار تاريخ البداية أو النهاية، يتأكد أن القيم منطقية
+        const fromDate = document.querySelector("[name='fromDate']");
+        const toDate = document.querySelector("[name='toDate']");
+
+        fromDate?.addEventListener("change", () => {
+            if (toDate.value && fromDate.value > toDate.value) {
+                alert("تاريخ البداية لا يمكن أن يكون بعد تاريخ النهاية!");
+                fromDate.value = "";
+            }
+        });
+
+        toDate?.addEventListener("change", () => {
+            if (fromDate.value && toDate.value < fromDate.value) {
+                alert("تاريخ النهاية لا يمكن أن يكون قبل البداية!");
+                toDate.value = "";
+            }
+        });
+    </script>
+}

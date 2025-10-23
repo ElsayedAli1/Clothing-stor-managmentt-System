@@ -1,0 +1,61 @@
+﻿@model IEnumerable<ElabdStor.Models.Return>
+
+<div dir="rtl" class="container mt-5">
+
+    <!-- العنوان وأزرار التحكم -->
+    <div class="d-flex justify-content-between align-items-center mb-4" style="margin-top: 10vh; gap: 20px;">
+        <h2 class="text-primary mb-0">مرتجعات المنتجات</h2>
+
+        <div class="d-flex align-items-center" style="gap: 15px;">
+            <form asp-action="Index" method="get" class="d-flex align-items-center" style="gap:10px;">
+                <label for="fromDate" class="mb-0 fw-bold">من تاريخ:</label>
+                <input type="date" name="fromDate" id="fromDate" class="form-control" />
+                <button type="submit" class="btn btn-secondary px-3 py-1 rounded">بحث</button>
+            </form>
+
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary px-4 py-2 rounded">
+                الرئيسية
+            </a>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+
+    <!-- جدول المرتجعات -->
+    <table class="table table-bordered table-striped text-center align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>كود المنتج</th>
+                <th>اسم المنتج</th>
+                <th>الكمية المرتجعة</th>
+                <th>تاريخ المرتجع</th>
+                <th>المبلغ المرتجع</th>
+                <th>اسم العميل</th>
+                <th>تليفون العميل</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Any())
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Product.Code</td>
+                        <td>@item.Product.Name</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.ReturnDate.ToString("yyyy-MM-dd")</td>
+                        <td>@item.RefundAmount.ToString("C")</td>
+                        <td>@item.Sale?.Customer?.Name</td>
+                        <td>@item.Sale?.Customer?.Phone</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7" class="text-muted">لا توجد مرتجعات في الفترة المحددة</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

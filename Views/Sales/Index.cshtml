@@ -1,0 +1,53 @@
+﻿@model IEnumerable<ElabdStor.Models.Sale>
+
+@{
+    ViewData["Title"] = "قائمة المبيعات";
+}
+
+<h2 class="text-primary mb-3">قائمة المبيعات</h2>
+
+<div class="mb-3 text-end">
+    <a asp-action="Create" class="btn btn-success">إنشاء فاتورة جديدة</a>
+</div>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-light">
+        <tr>
+            <th>#</th>
+            <th>اسم العميل</th>
+            <th>تاريخ الفاتورة</th>
+            <th>عدد المنتجات</th>
+            <th>الإجمالي</th>
+            <th>صافي الربح</th>
+            <th>خيارات</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="6" class="text-center">لا توجد مبيعات حتى الآن</td>
+            </tr>
+        }
+        else
+        {
+            int count = 1;
+            foreach (var sale in Model)
+            {
+                var total = sale.SaleItems.Sum(si => si.Quantity * si.UnitPrice);
+                <tr>
+                    <td>@count</td>
+                    <td>@sale.Customer?.Name</td>
+                    <td>@sale.SaleDate.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@sale.SaleItems.Count</td>
+                    <td>@total.ToString("0.00") ج.م</td>
+                    <td>@sale.NetProfit.ToString("0.00") ج.م</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@sale.Id" class="btn btn-sm btn-info">التفاصيل</a>
+                    </td>
+                </tr>
+                count++;
+            }
+        }
+    </tbody>
+</table>
